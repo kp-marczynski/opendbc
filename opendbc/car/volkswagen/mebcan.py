@@ -1,5 +1,8 @@
 from opendbc.car.volkswagen.mebutils import map_speed_to_acc_tempolimit
 
+ACCEL_INACTIVE = 3.01
+ACCEL_OVERRIDE = 0.00
+
 ACC_CTRL_ERROR    = 6
 ACC_CTRL_OVERRIDE = 4
 ACC_CTRL_ACTIVE   = 3
@@ -178,13 +181,13 @@ def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, low
 
   if acc_enabled:
     if override: # the car expects a non inactive accel while overriding
-      acceleration = 0.00 # original ACC still sends active accel in this case (seamless experience)
+      acceleration = ACCEL_OVERRIDE # original ACC still sends active accel in this case (seamless experience)
     elif stopping and esp_hold:
-      acceleration = 3.01 # inactive accel, newer gen >2024 error of not neutral
+      acceleration = ACCEL_INACTIVE # inactive accel, newer gen >2024 error of not neutral value
     else:
       acceleration = accel
   else:
-    acceleration = 3.01 # inactive accel
+    acceleration = ACCEL_INACTIVE # inactive accel
 
   values = {
     "ACC_Typ":                    acc_type,
