@@ -336,7 +336,7 @@ class CarState(CarStateBase):
     accFaulted = pt_cp.vl["Motor_51"]["TSK_Status"] in (6, 7)
     ret.accFaulted = self.update_acc_fault(accFaulted, parking_brake=ret.parkingBrake, drive_mode=drive_mode)
 
-    self.esp_hold_confirmation = bool(pt_cp.vl["VMM_02"]["ESP_Hold"])
+    self.esp_hold_confirmation = pt_cp.vl["ESC_50"]["Motion_State"] == 3
     ret.cruiseState.standstill = self.CP.pcmCruise and self.esp_hold_confirmation
 
     # Update ACC setpoint. When the setpoint is zero or there's an error, the
