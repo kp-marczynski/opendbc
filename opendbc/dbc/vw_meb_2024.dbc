@@ -3472,8 +3472,16 @@ BO_ 619 TA_01: 8 XXX
  SG_ CHECKSUM : 0|8@1+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 8|4@1+ (1,0) [0|15] "" XXX
  SG_ Travel_Assist_Status : 13|3@1+ (1,0) [0|3] "" XXX
+ SG_ Speed_Mode_01 : 16|1@0+ (1,0) [0|1] "" XXX
+ SG_ Speed_Mode_02 : 18|1@0+ (1,0) [0|1] "" XXX
  SG_ Travel_Assist_Request : 19|3@1+ (1,0) [0|7] "" XXX
+ SG_ Init : 22|1@0+ (1,0) [0|1] "" XXX
  SG_ Travel_Assist_Available : 23|1@1+ (1,0) [0|1] "" XXX
+ SG_ Unknown_01 : 26|1@0+ (1,0) [0|1] "" XXX
+ SG_ Unknown_02 : 28|1@0+ (1,0) [0|1] "" XXX
+ SG_ Unknown_03 : 31|1@0+ (1,0) [0|1] "" XXX
+ SG_ Speed_Mode_Status : 32|3@1+ (1,0) [0|7] "" XXX
+ SG_ Lane_Unsure : 37|2@1+ (1,0) [0|3] "" XXX
 
 BO_ 333 ACC_18: 32 XXX
  SG_ CHECKSUM : 0|8@1+ (1,0) [0|255] "" XXX
