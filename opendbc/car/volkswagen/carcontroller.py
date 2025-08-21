@@ -198,14 +198,15 @@ class CarController(CarControllerBase):
                                                                                                                                 self.long_dy_down_last,
                                                                                                                                 DT_CTRL * self.CCP.ACC_CONTROL_STEP,
                                                                                                                                 critical_state)
-          
+
+          gen_2_cmd = self.CP.flags & VolkswagenFlags.MEB_GEN2
           acc_control = self.CCS.acc_control_value(CS.out.cruiseState.available, CS.out.accFaulted, CC.enabled, long_override)          
           acc_hold_type = self.CCS.acc_hold_type(CS.out.cruiseState.available, CS.out.accFaulted, CC.enabled, starting, stopping,
                                                  CS.esp_hold_confirmation, long_override, long_override_begin, long_disabling)
           can_sends.extend(self.CCS.create_acc_accel_control(self.packer_pt, self.CAN.pt, CS.acc_type, CC.enabled,
                                                              self.long_jerk_up_last, self.long_jerk_down_last, upper_control_limit, lower_control_limit,
                                                              accel, acc_control, acc_hold_type, stopping, starting, CS.esp_hold_confirmation,
-                                                             CS.out.vEgoRaw * CV.MS_TO_KPH, long_override, CS.travel_assist_available))
+                                                             CS.out.vEgoRaw * CV.MS_TO_KPH, long_override, CS.travel_assist_available, gen_2_cmd))
 
         else:
           starting = actuators.longControlState == LongCtrlState.pid and (CS.esp_hold_confirmation or CS.out.vEgo < self.CP.vEgoStopping)
