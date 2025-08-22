@@ -175,8 +175,7 @@ def acc_hold_type(main_switch_on, acc_faulted, long_active, starting, stopping, 
 
 
 def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, lower_jerk, upper_control_limit, lower_control_limit,
-                             accel, acc_control, acc_hold_type, stopping, starting, esp_hold, speed, override, travel_assist_available,
-                             gen_2_cmd):
+                             accel, acc_control, acc_hold_type, stopping, starting, esp_hold, speed, override, travel_assist_available):
   # active longitudinal control disables one pedal driving (regen mode) while using overriding mechnism
   commands = []
 
@@ -209,11 +208,6 @@ def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, low
     "SET_ME_0X1":                 0x1,
     "SET_ME_0X9":                 0x9,
   }
-
-  if gen_2_cmd:
-    values.update({
-      "SET_ME_0x2FE": 0x2FE,
-    })
 
   commands.append(packer.make_can_msg("ACC_18", bus, values))
 
