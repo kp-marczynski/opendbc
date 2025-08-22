@@ -208,6 +208,12 @@ class WMI(StrEnum):
   VOLKSWAGEN_EUROPE_SUV = "WVG"
   VOLKSWAGEN_EUROPE_CAR = "WVW"
   VOLKSWAGEN_GROUP_RUS = "XW8"
+  
+  
+class MODEL_YEARS = [
+    "A","B","C","D","E","F","G","H","J","K","L","M","N","P","R","S","T","V","W","X","Y",
+    "1","2","3","4","5","6","7","8","9"
+]
 
 
 class VolkswagenSafetyFlags(IntFlag):
@@ -244,6 +250,7 @@ class VolkswagenMEBPlatformConfig(PlatformConfig):
   dbc_dict: DbcDict = field(default_factory=lambda: {Bus.pt: 'vw_meb', Bus.radar: 'vw_meb'})
   chassis_codes: set[str] = field(default_factory=set)
   wmis: set[WMI] = field(default_factory=set)
+  model_years: set[str] = field(default_factory=set)
 
   def init(self):
     self.flags |= VolkswagenFlags.MEB
@@ -371,6 +378,34 @@ class CAR(Platforms):
     VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
     chassis_codes={"5G", "AU", "BA", "BE"},
     wmis={WMI.VOLKSWAGEN_MEXICO_CAR, WMI.VOLKSWAGEN_EUROPE_CAR},
+  )
+  VOLKSWAGEN_ID3_MK1 = VolkswagenMEBPlatformConfig(
+    [VWCarDocs("Volkswagen ID.3")],
+    VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
+    chassis_codes={"E1"},
+    wmis={WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR},
+    model_year={"N"},
+  )
+  VOLKSWAGEN_ID3_MK2 = VolkswagenMEBPlatformConfig(
+    [VWCarDocs("Volkswagen ID.3")],
+    VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
+    chassis_codes={"E1"},
+    wmis={WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR},
+    model_year={"S"},
+  )
+  VOLKSWAGEN_ID4_MK1 = VolkswagenMEBPlatformConfig(
+    [VWCarDocs("Volkswagen ID.4")],
+    VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
+    chassis_codes={"E2"},
+    wmis={WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR, VOLKSWAGEN_EUROPE_SUV},
+    model_year={"M"},
+  )
+  VOLKSWAGEN_ID4_MK2 = VolkswagenMEBPlatformConfig(
+    [VWCarDocs("Volkswagen ID.4")],
+    VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
+    chassis_codes={"E8"},
+    wmis={WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR},
+    model_year={"R"},
   )
   VOLKSWAGEN_JETTA_MK6 = VolkswagenPQPlatformConfig(
     [VWCarDocs("Volkswagen Jetta 2015-18")],
@@ -568,6 +603,7 @@ def match_fw_to_car_fuzzy(live_fw_versions, vin, offline_fw_versions) -> set[str
   # https://www.clubvw.org.au/vwreference/vwvin
   vin_obj = Vin(vin)
   chassis_code = vin_obj.vds[3:5]
+  model_year = vin_obj.vis[0]
 
   for platform in CAR:
     valid_ecus = set()
@@ -588,6 +624,8 @@ def match_fw_to_car_fuzzy(live_fw_versions, vin, offline_fw_versions) -> set[str
       continue
 
     if vin_obj.wmi in platform.config.wmis and chassis_code in platform.config.chassis_codes:
+      if platform.config.model_years and model_year not in platform.config.model_years and model_year < platform.config.model_years:
+        continue
       candidates.add(platform)
 
   return {str(c) for c in candidates}
