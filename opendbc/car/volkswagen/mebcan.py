@@ -202,7 +202,7 @@ def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, low
     "ACC_pos_Sollbeschl_Grad_02": upper_jerk if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) and not full_stop_no_start else 0,
     "ACC_Anfahren":               starting,
     "ACC_Anhalten":               stopping if not esp_hold else 0, # as long as actually stopping (stock), error mitigation for sensitive new gen cars
-    "ACC_Anhalteweg":             0 if acc_control == ACC_CTRL_ACTIVE and stopping else 20.46,
+    "ACC_Anhalteweg":             20.46, #0 if acc_control == ACC_CTRL_ACTIVE and stopping else 20.46,
     "ACC_Anforderung_HMS":        acc_hold_type,
     "ACC_AKTIV_regelt":           1 if acc_control == ACC_CTRL_ACTIVE else 0,
     "Speed":                      speed,
