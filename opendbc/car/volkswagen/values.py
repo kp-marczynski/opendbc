@@ -208,12 +208,6 @@ class WMI(StrEnum):
   VOLKSWAGEN_EUROPE_SUV = "WVG"
   VOLKSWAGEN_EUROPE_CAR = "WVW"
   VOLKSWAGEN_GROUP_RUS = "XW8"
-  
-  
-class MODEL_YEARS = [
-    "A","B","C","D","E","F","G","H","J","K","L","M","N","P","R","S","T","V","W","X","Y",
-    "1","2","3","4","5","6","7","8","9"
-]
 
 
 class VolkswagenSafetyFlags(IntFlag):
@@ -384,28 +378,28 @@ class CAR(Platforms):
     VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
     chassis_codes={"E1"},
     wmis={WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR},
-    model_year={"N"},
+    model_years={"N"},
   )
   VOLKSWAGEN_ID3_MK2 = VolkswagenMEBPlatformConfig(
     [VWCarDocs("Volkswagen ID.3")],
     VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
     chassis_codes={"E1"},
     wmis={WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR},
-    model_year={"S"},
+    model_years={"S"},
   )
   VOLKSWAGEN_ID4_MK1 = VolkswagenMEBPlatformConfig(
     [VWCarDocs("Volkswagen ID.4")],
     VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
     chassis_codes={"E2"},
     wmis={WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR, VOLKSWAGEN_EUROPE_SUV},
-    model_year={"M"},
+    model_years={"M"},
   )
   VOLKSWAGEN_ID4_MK2 = VolkswagenMEBPlatformConfig(
     [VWCarDocs("Volkswagen ID.4")],
     VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
     chassis_codes={"E8"},
-    wmis={WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR},
-    model_year={"R"},
+    wmis={WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR, VOLKSWAGEN_EUROPE_SUV},
+    model_years={"R"},
   )
   VOLKSWAGEN_JETTA_MK6 = VolkswagenPQPlatformConfig(
     [VWCarDocs("Volkswagen Jetta 2015-18")],
@@ -535,15 +529,9 @@ class CAR(Platforms):
     [VWCarDocs("CUPRA Born 2021"),],
     # for CUPRA BORN 77kWh 170 kW, tireStiffnessFactor and centerToFrontRatio are approximations
     VolkswagenCarSpecs(mass=1950, wheelbase=2.766, steerRatio=15.9, centerToFrontRatio=0.496, tireStiffnessFactor=1.0),
-    chassis_codes={"K1", "E1", "E2"}, # cupra born 2023, ID.3 older gen, ID.4 2021
-    wmis={WMI.SEAT, WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR},
-  )
-  CUPRA_BORN_GEN2 = VolkswagenMEBPlatformConfig(
-    [VWCarDocs("CUPRA Born Gen 2")],
-    CUPRA_BORN_MK1.specs,
-    chassis_codes={"E8", "NY", "E1"}, # ID.4 newer gen and 2024 (gen 2), skoda enyaq (probably gen 2), ID.3 Pro 2025 (gen 2.2)
-    wmis={WMI.SEAT, WMI.VOLKSWAGEN_USA_SUV, WMI.VOLKSWAGEN_EUROPE_CAR, WMI.SKODA},
-    flags=VolkswagenFlags.MEB_GEN2,
+    chassis_codes={"K1"},
+    model_years={"P"},
+    wmis={WMI.SEAT},
   )
   SKODA_FABIA_MK4 = VolkswagenMQBPlatformConfig(
     [VWCarDocs("Škoda Fabia 2022-23", footnotes=[Footnote.VW_MQB_A0])],
@@ -624,7 +612,7 @@ def match_fw_to_car_fuzzy(live_fw_versions, vin, offline_fw_versions) -> set[str
       continue
 
     if vin_obj.wmi in platform.config.wmis and chassis_code in platform.config.chassis_codes:
-      if platform.config.model_years and model_year not in platform.config.model_years and model_year < platform.config.model_years:
+      if platform.config.model_years and model_year not in platform.config.model_years:
         continue
       candidates.add(platform)
 
