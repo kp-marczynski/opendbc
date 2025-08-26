@@ -102,6 +102,7 @@ class CarInterface(CarInterfaceBase):
     elif ret.flags & VolkswagenFlags.MEB:
       ret.steerActuatorDelay = 0.3
       ret.useCarSteerCurvature = True
+      ret.useCarYawrate = True
       ret.lateralTuning.pid.kpBP = [10., 40.]
       ret.lateralTuning.pid.kiBP = [10., 40.]
       ret.lateralTuning.pid.kf = 1.
