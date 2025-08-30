@@ -1,4 +1,5 @@
 from opendbc.car.volkswagen.mebutils import map_speed_to_acc_tempolimit
+from opendbc.car.volkswagen.values import VolkswagenFlags
 
 ACCEL_INACTIVE = 3.01
 ACCEL_OVERRIDE = 0.00
@@ -174,7 +175,7 @@ def acc_hold_type(main_switch_on, acc_faulted, long_active, starting, stopping, 
   return acc_hold_type
 
 
-def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, lower_jerk, upper_control_limit, lower_control_limit,
+def create_acc_accel_control(packer, bus, CP, acc_type, acc_enabled, upper_jerk, lower_jerk, upper_control_limit, lower_control_limit,
                              accel, acc_control, acc_hold_type, stopping, starting, esp_hold, speed, override, travel_assist_available):
   # active longitudinal control disables one pedal driving (regen mode) while using overriding mechnism
   # error mitigation when stopping or stopped: (newer gen cars can be very sensitive)
@@ -214,11 +215,15 @@ def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, low
     "ACC_Anforderung_HMS":        acc_hold_type,
     "ACC_AKTIV_regelt":           1 if acc_control == ACC_CTRL_ACTIVE else 0,
     "Speed":                      speed,
-    "SET_ME_0x2FE":               0x2FE,
     "SET_ME_0XFE":                0xFE,
     "SET_ME_0X1":                 0x1,
     "SET_ME_0X9":                 0x9,
   }
+
+  if CP.flags & VolkswagenFlags.MEB_GEN2:
+    values.update({
+      "SET_ME_0x2FE": 0x2FE,
+    })
 
   commands.append(packer.make_can_msg("ACC_18", bus, values))
 
