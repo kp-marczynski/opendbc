@@ -177,26 +177,27 @@ def acc_hold_type(main_switch_on, acc_faulted, long_active, starting, stopping, 
 def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, lower_jerk, upper_control_limit, lower_control_limit,
                              accel, acc_control, acc_hold_type, stopping, starting, esp_hold, speed, override, travel_assist_available):
   # active longitudinal control disables one pedal driving (regen mode) while using overriding mechnism
-  commands = []
-
-  if acc_enabled:
-    if override: # the car expects a non inactive accel while overriding
-      acceleration = ACCEL_OVERRIDE # original ACC still sends active accel in this case (seamless experience)
-    elif stopping and esp_hold:
-      acceleration = ACCEL_INACTIVE # inactive accel, newer gen >2024 error of not neutral value
-    else:
-      acceleration = accel
-  else:
-    acceleration = ACCEL_INACTIVE # inactive accel
-
-  full_stop_no_start = esp_hold and not starting # error mitigation for sensitive new gen cars, see usages, stock behaviour
-
   # error mitigation when stopping or stopped: (newer gen cars can be very sensitive)
   # - send 0 m stopping distance for cars in kind of parameterized stopping mode (stopping accel -0.2 seen for those cars)
   # -> this mode is seen for different cars with same firmware radars so could be a coded operational mode
   # - jerk and control limits values set to 0 when fully stopped
   # - set accel to 0 / no stop accel for full stop (seems to be compatible with old (non 0 stop accel) and new gen, because HMS state holds the car anyways)
   # - stopping command sent as long as actually stopping
+  commands = []
+
+  full_stop          = stopping and esp_hold
+  full_stop_no_start = esp_hold and not starting
+  actually_stopping  = stopping and not esp_hold
+
+  if acc_enabled:
+    if override: # the car expects a non inactive accel while overriding
+      acceleration = ACCEL_OVERRIDE # original ACC still sends active accel in this case (seamless experience)
+    elif full_stop:
+      acceleration = ACCEL_INACTIVE # inactive accel, newer gen >2024 error of not neutral value
+    else:
+      acceleration = accel
+  else:
+    acceleration = ACCEL_INACTIVE # inactive accel
   
   values = {
     "ACC_Typ":                    acc_type,
@@ -208,8 +209,8 @@ def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, low
     "ACC_neg_Sollbeschl_Grad_02": lower_jerk if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) and not full_stop_no_start else 0,
     "ACC_pos_Sollbeschl_Grad_02": upper_jerk if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) and not full_stop_no_start else 0,
     "ACC_Anfahren":               starting,
-    "ACC_Anhalten":               stopping if not esp_hold else 0,
-    "ACC_Anhalteweg":             0 if stopping and esp_hold else 20.46,
+    "ACC_Anhalten":               1 if actually_stopping else 0,
+    "ACC_Anhalteweg":             0 if actually_stopping else 20.46,
     "ACC_Anforderung_HMS":        acc_hold_type,
     "ACC_AKTIV_regelt":           1 if acc_control == ACC_CTRL_ACTIVE else 0,
     "Speed":                      speed,
