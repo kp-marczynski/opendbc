@@ -298,12 +298,13 @@ class CarState(CarStateBase, MadsCarState):
     else:
       ret.parkingBrake = pt_cp.vl["Gateway_73"]["EPB_Status"] in (1, 4) # this signal is not working for newer models
 
-    # Update door and trunk/hatch lid open status.
-    # ret.doorOpen = any([pt_cp.vl["ZV_02"]["ZV_FT_offen"],
-    #                     pt_cp.vl["ZV_02"]["ZV_BT_offen"],
-    #                     pt_cp.vl["ZV_02"]["ZV_HFS_offen"],
-    #                     pt_cp.vl["ZV_02"]["ZV_HBFS_offen"],
-    #                     pt_cp.vl["ZV_02"]["ZV_HD_offen"]])
+    if not (self.CP.flags & VolkswagenFlags.MQB_EVO):
+      # Update door and trunk/hatch lid open status.
+      ret.doorOpen = any([pt_cp.vl["ZV_02"]["ZV_FT_offen"],
+                          pt_cp.vl["ZV_02"]["ZV_BT_offen"],
+                          pt_cp.vl["ZV_02"]["ZV_HFS_offen"],
+                          pt_cp.vl["ZV_02"]["ZV_HBFS_offen"],
+                          pt_cp.vl["ZV_02"]["ZV_HD_offen"]])
 
     # Update seatbelt fastened status.
     ret.seatbeltUnlatched = pt_cp.vl["Airbag_02"]["AB_Gurtschloss_FA"] != 3

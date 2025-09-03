@@ -227,6 +227,7 @@ class VolkswagenFlags(IntFlag):
   PQ = 2
   MEB = 64
   MEB_GEN2 = 128
+  MQB_EVO = 256
 
 
 
@@ -381,6 +382,7 @@ class CAR(Platforms):
     VolkswagenCarSpecs(mass=1360, wheelbase=2.64),
     chassis_codes={"CD"},  # TODO: incomplete
     wmis={WMI.VOLKSWAGEN_EUROPE_CAR},  # TODO: incomplete
+    flags=VolkswagenFlags.MQB_EVO,
   )
   VOLKSWAGEN_JETTA_MK6 = VolkswagenPQPlatformConfig(
     [VWCarDocs("Volkswagen Jetta 2015-18")],
