@@ -298,18 +298,8 @@ class CarState(CarStateBase, MadsCarState):
 
     # Update door and trunk/hatch lid open status.
     # ["Gateway_72"]["ZV_02_alt"] probably is set to 1 if ZV_02 is used and Gateway_72 is obsolete for door states
-    if self.CP.flags & VolkswagenFlags.MQBEVO:
-      ret.doorOpen = any([pt_cp.vl["Gateway_72"]["ZV_FT_offen"],
-                          pt_cp.vl["Gateway_72"]["ZV_BT_offen"],
-                          pt_cp.vl["Gateway_72"]["ZV_HFS_offen"],
-                          pt_cp.vl["Gateway_72"]["ZV_HBFS_offen"],
-                          pt_cp.vl["Gateway_72"]["ZV_HD_offen"]])
-    else:
-      ret.doorOpen = any([pt_cp.vl["ZV_02"]["ZV_FT_offen"],
-                          pt_cp.vl["ZV_02"]["ZV_BT_offen"],
-                          pt_cp.vl["ZV_02"]["ZV_HFS_offen"],
-                          pt_cp.vl["ZV_02"]["ZV_HBFS_offen"],
-                          pt_cp.vl["ZV_02"]["ZV_HD_offen"]])
+    doors = pt_cp.vl["Gateway_72"] if self.CP.flags & VolkswagenFlags.MQBEVO else pt_cp.vl["ZV_02"]
+    ret.doorOpen = any(doors["ZV_FT_offen"], doors["ZV_BT_offen"], doors["ZV_HFS_offen"], doors["ZV_HBFS_offen"], doors["ZV_HD_offen"]])
 
     # Update seatbelt fastened status.
     ret.seatbeltUnlatched = pt_cp.vl["Airbag_02"]["AB_Gurtschloss_FA"] != 3
