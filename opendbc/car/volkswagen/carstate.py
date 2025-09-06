@@ -56,10 +56,8 @@ class CarState(CarStateBase, MadsCarState):
 
     if self.CP.flags & VolkswagenFlags.PQ:
       return self.update_pq(pt_cp, cam_cp, main_cp, ext_cp)
-    elif self.CP.flags & VolkswagenFlags.MEB:
+    elif self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQBEVO):
       return self.update_meb(pt_cp, main_cp, cam_cp, ext_cp)
-    elif self.CP.flags & VolkswagenFlags.MQBEVO:
-      return self.update_mqbevo(pt_cp, main_cp, cam_cp, ext_cp)
 
     ret = structs.CarState()
     ret_sp = structs.CarStateSP()
@@ -277,7 +275,7 @@ class CarState(CarStateBase, MadsCarState):
     
     # Update gear and/or clutch position data.
     if self.CP.flags & VolkswagenFlags.ALT_GEAR:
-      ret.gearShifter = self.parse_gear_shifter(self.CCP.shifter_values.get(pt_cp.vl["Gateway_73"]["GE_Fahrstufe"], None)) # (candidate for all plattforms)
+      ret.gearShifter = self.parse_gear_shifter(self.CCP.shifter_values.get(pt_cp.vl["Gateway_73"]["GE_Fahrstufe"], None)) # (candidate for all plattforms MEB and MQB evo)
     else:
       ret.gearShifter = self.parse_gear_shifter(self.CCP.shifter_values.get(pt_cp.vl["Getriebe_11"]["GE_Fahrstufe"], None))
     drive_mode = ret.gearShifter == GearShifter.drive
@@ -295,17 +293,22 @@ class CarState(CarStateBase, MadsCarState):
     ret.brakePressed = bool(pt_cp.vl["Motor_14"]["MO_Fahrer_bremst"]) # includes regen braking by user
     ret.brake        = pt_cp.vl["ESC_51"]["Brake_Pressure"]
 
-    if self.CP.flags & VolkswagenFlags.MEB_GEN2:
-      ret.parkingBrake = pt_cp.vl["ESC_50"]["EPB_Status"] in (1, 4) # EPB closing or closed (candidate for all plattforms)
-    else:
-      ret.parkingBrake = pt_cp.vl["Gateway_73"]["EPB_Status"] in (1, 4) # this signal is not working for newer models
+    ret.parkingBrake = pt_cp.vl["ESC_50"]["EPB_Status"] in (1, 4) # EPB closing or closed (candidate for all plattforms)
+    #ret.parkingBrake = pt_cp.vl["Gateway_73"]["EPB_Status"] in (1, 4) # this signal is not working for newer models
 
     # Update door and trunk/hatch lid open status.
-    ret.doorOpen = any([pt_cp.vl["ZV_02"]["ZV_FT_offen"],
-                        pt_cp.vl["ZV_02"]["ZV_BT_offen"],
-                        pt_cp.vl["ZV_02"]["ZV_HFS_offen"],
-                        pt_cp.vl["ZV_02"]["ZV_HBFS_offen"],
-                        pt_cp.vl["ZV_02"]["ZV_HD_offen"]])
+    if self.CP.flags & VolkswagenFlags.MQBEVO:
+      ret.doorOpen = any([pt_cp.vl["Gateway_72"]["ZV_FT_offen"],
+                          pt_cp.vl["Gateway_72"]["ZV_BT_offen"],
+                          pt_cp.vl["Gateway_72"]["ZV_HFS_offen"],
+                          pt_cp.vl["Gateway_72"]["ZV_HBFS_offen"],
+                          pt_cp.vl["Gateway_72"]["ZV_HD_offen"]])
+    else:
+      ret.doorOpen = any([pt_cp.vl["ZV_02"]["ZV_FT_offen"],
+                          pt_cp.vl["ZV_02"]["ZV_BT_offen"],
+                          pt_cp.vl["ZV_02"]["ZV_HFS_offen"],
+                          pt_cp.vl["ZV_02"]["ZV_HBFS_offen"],
+                          pt_cp.vl["ZV_02"]["ZV_HD_offen"]])
 
     # Update seatbelt fastened status.
     ret.seatbeltUnlatched = pt_cp.vl["Airbag_02"]["AB_Gurtschloss_FA"] != 3
@@ -343,7 +346,11 @@ class CarState(CarStateBase, MadsCarState):
     accFaulted = pt_cp.vl["Motor_51"]["TSK_Status"] in (6, 7)
     ret.accFaulted = self.update_acc_fault(accFaulted, parking_brake=ret.parkingBrake, drive_mode=drive_mode)
 
-    self.esp_hold_confirmation = bool(pt_cp.vl["VMM_02"]["ESP_Hold"]) # observe for newer gen
+    if self.CP.flags & VolkswagenFlags.MQBEVO:
+      self.esp_hold_confirmation = bool(pt_cp.vl["ESP_21"]["ESP_Haltebestaetigung"])
+    else:
+      self.esp_hold_confirmation = bool(pt_cp.vl["VMM_02"]["ESP_Hold"]) # observe for newer MEB gen
+      
     ret.cruiseState.standstill = self.CP.pcmCruise and self.esp_hold_confirmation
 
     # Update ACC setpoint. When the setpoint is zero or there's an error, the
@@ -387,142 +394,18 @@ class CarState(CarStateBase, MadsCarState):
 
     self.ea_hud_stock_values = cam_cp.vl["EA_02"]
 
-    ret.fuelGauge = pt_cp.vl["Motor_16"]["MO_Energieinhalt_BMS"]
-
-    # EV battery details
-    ret.batteryDetails.charge = pt_cp.vl["Motor_16"]["MO_Energieinhalt_BMS"] # battery charge WattHours
-    if self.CP.networkLocation == NetworkLocation.gateway:
-      ret.batteryDetails.heaterActive = bool(main_cp.vl["MEB_HVEM_03"]["PTC_ON"]) # battery heater active
-      ret.batteryDetails.voltage      = main_cp.vl["MEB_HVEM_01"]["Battery_Voltage"] # battery voltage
-      ret.batteryDetails.capacity     = main_cp.vl["BMS_04"]["BMS_Kapazitaet_02"] * 355 # EV battery capacity Ah * nominal voltage cupra born WattHours
-      ret.batteryDetails.soc          = ret.batteryDetails.charge / ret.batteryDetails.capacity * 100 if ret.batteryDetails.capacity > 0 else 0 # battery SoC in percent
-      ret.batteryDetails.power        = main_cp.vl["MEB_HVEM_01"]["Engine_Power"] # engine power output
-      ret.batteryDetails.temperature  = main_cp.vl["DCDC_03"]["DC_Temperatur"] # dcdc converter temperature
+    if self.CP.flags & VolkswagenFlags.MEB:
+      ret.fuelGauge = pt_cp.vl["Motor_16"]["MO_Energieinhalt_BMS"]
       
-    MadsCarState.update_mads(self, ret, pt_cp, hca_status)
-
-    self.frame += 1
-    return ret, ret_sp
-    
-  def update_mqbevo(self, pt_cp, main_cp, cam_cp, ext_cp) -> tuple[structs.CarState, structs.CarStateSP]:
-    ret = structs.CarState()
-    ret_sp = structs.CarStateSP()
-    
-    # Update vehicle speed and acceleration from ABS wheel speeds.
-    self.parse_wheel_speeds(ret,
-      pt_cp.vl["ESC_51"]["VL_Radgeschw"],
-      pt_cp.vl["ESC_51"]["VR_Radgeschw"],
-      pt_cp.vl["ESC_51"]["HL_Radgeschw"],
-      pt_cp.vl["ESC_51"]["HR_Radgeschw"],
-    )
-
-    #ret.vEgoCluster = pt_cp.vl["Kombi_01"]["KBI_angez_Geschw"] * CV.KPH_TO_MS
-    ret.standstill = ret.vEgoRaw == 0
-
-    # Update EPS position and state info. For signed values, VW sends the sign in a separate signal.
-    # LWI_01, MEP_EPS_01 steering angle differs from real steering angle (dynamic steering)
-    ret.steeringAngleDeg = pt_cp.vl["LWI_01"]["LWI_Lenkradwinkel"] * (1, -1)[int(pt_cp.vl["LWI_01"]["LWI_VZ_Lenkradwinkel"])]
-    ret.steeringRateDeg  = pt_cp.vl["LWI_01"]["LWI_Lenkradw_Geschw"] * (1, -1)[int(pt_cp.vl["LWI_01"]["LWI_VZ_Lenkradw_Geschw"])]
-    ret.steeringTorque   = pt_cp.vl["LH_EPS_03"]["EPS_Lenkmoment"] * (1, -1)[int(pt_cp.vl["LH_EPS_03"]["EPS_VZ_Lenkmoment"])]
-    ret.steeringPressed  = abs(ret.steeringTorque) > self.CCP.STEER_DRIVER_ALLOWANCE
-    ret.steeringCurvature = -pt_cp.vl["QFK_01"]["Curvature"] * (1, -1)[int(pt_cp.vl["QFK_01"]["Curvature_VZ"])]
-    
-    ret.yawRate = -pt_cp.vl["ESC_50"]["Yaw_Rate"] * (1, -1)[int(pt_cp.vl["ESC_50"]["Yaw_Rate_Sign"])] * CV.DEG_TO_RAD
-    
-    # Update gear and/or clutch position data.
-    ret.gearShifter = self.parse_gear_shifter(self.CCP.shifter_values.get(pt_cp.vl["Gateway_73"]["GE_Fahrstufe"], None))
-      
-    drive_mode = ret.gearShifter == GearShifter.drive
-    
-    hca_status = self.CCP.hca_status_values.get(pt_cp.vl["QFK_01"]["LatCon_HCA_Status"])
-    ret.steerFaultTemporary, ret.steerFaultPermanent = self.update_hca_state(hca_status, drive_mode=drive_mode)
-
-    # VW Emergency Assist status tracking and mitigation
-    self.eps_stock_values = pt_cp.vl["LH_EPS_03"]
-    self.klr_stock_values = pt_cp.vl["KLR_01"] if self.CP.flags & VolkswagenFlags.STOCK_KLR_PRESENT else {}
-    #ret.carFaultedNonCritical = cam_cp.vl["EA_01"]["EA_Funktionsstatus"] in (3, 4, 5, 6) # prepared, not tested
-
-    # Update gas, brakes, and gearshift.
-    ret.gasPressed   = pt_cp.vl["Motor_54"]["Accelerator_Pressure"] > 0
-    ret.brakePressed = bool(pt_cp.vl["Motor_14"]["MO_Fahrer_bremst"]) # includes regen braking by user
-    ret.brake        = pt_cp.vl["ESC_51"]["Brake_Pressure"]
-
-    ret.parkingBrake = pt_cp.vl["ESC_50"]["EPB_Status"] in (1, 4) # both signals are seen, maybe similar to MEB: use candidate for all MEB plattforms and years
-    #ret.parkingBrake = pt_cp.vl["Gateway_73"]["EPB_Status"] in (1, 4)
-
-    # Update door and trunk/hatch lid open status.
-    ret.doorOpen = any([pt_cp.vl["Gateway_72"]["ZV_FT_offen"],
-                        pt_cp.vl["Gateway_72"]["ZV_BT_offen"],
-                        pt_cp.vl["Gateway_72"]["ZV_HFS_offen"],
-                        pt_cp.vl["Gateway_72"]["ZV_HBFS_offen"],
-                        pt_cp.vl["Gateway_72"]["ZV_HD_offen"]])
-
-    # Update seatbelt fastened status.
-    ret.seatbeltUnlatched = pt_cp.vl["Airbag_02"]["AB_Gurtschloss_FA"] != 3
-
-    # Consume blind-spot monitoring info/warning LED states, if available.
-    # Infostufe: BSM LED on, Warnung: BSM LED flashing
-    if self.CP.enableBsm:
-      # TODO get side assignment
-      ret.leftBlindspot  = bool(bsm_bus.vl["MEB_Side_Assist_01"]["Blind_Spot_Info_Driver"]) or bool(bsm_bus.vl["MEB_Side_Assist_01"]["Blind_Spot_Warn_Driver"])
-      ret.rightBlindspot = bool(bsm_bus.vl["MEB_Side_Assist_01"]["Blind_Spot_Info_Passenger"]) or bool(bsm_bus.vl["MEB_Side_Assist_01"]["Blind_Spot_Warn_Passenger"])
-
-    # Consume factory LDW data relevant for factory SWA (Lane Change Assist)
-    # and capture it for forwarding to the blind spot radar controller
-    self.ldw_stock_values = cam_cp.vl["LDW_02"]
-
-    ret.stockFcw = bool(ext_cp.vl["AWV_03"]["FCW_Active"]) # currently most plausible candidate
-    ret.stockAeb = False #bool(pt_cp.vl["VMM_02"]["AEB_Active"]) TODO find correct signal
-
-    self.acc_type                = ext_cp.vl["ACC_18"]["ACC_Typ"]
-    self.travel_assist_available = bool(cam_cp.vl["TA_01"]["Travel_Assist_Available"])
-
-    ret.cruiseState.available = pt_cp.vl["Motor_51"]["TSK_Status"] in (2, 3, 4, 5)
-    ret.cruiseState.enabled   = pt_cp.vl["Motor_51"]["TSK_Status"] in (3, 4, 5)
-
-    if self.CP.pcmCruise:
-      # Cruise Control mode; check for distance UI setting from the radar.
-      # ECM does not manage this, so do not need to check for openpilot longitudinal
-      ret.cruiseState.nonAdaptive = bool(ext_cp.vl["MEB_ACC_01"]["ACC_Limiter_Mode"])
-    else:
-      # Speed limiter mode; ECM faults if we command ACC while not pcmCruise
-      ret.cruiseState.nonAdaptive = bool(pt_cp.vl["Motor_51"]["TSK_Limiter_ausgewaehlt"])
-
-    accFaulted = pt_cp.vl["Motor_51"]["TSK_Status"] in (6, 7)
-    ret.accFaulted = self.update_acc_fault(accFaulted, parking_brake=ret.parkingBrake, drive_mode=drive_mode)
-
-    self.esp_hold_confirmation = bool(pt_cp.vl["ESP_21"]["ESP_Haltebestaetigung"])
-    ret.cruiseState.standstill = self.CP.pcmCruise and self.esp_hold_confirmation
-
-    # Update ACC setpoint. When the setpoint is zero or there's an error, the
-    # radar sends a set-speed of ~90.69 m/s / 203mph.
-    if self.CP.pcmCruise:
-      ret.cruiseState.speed = int(round(ext_cp.vl["MEB_ACC_01"]["ACC_Wunschgeschw_02"])) * CV.KPH_TO_MS
-      if ret.cruiseState.speed > 90:
-        ret.cruiseState.speed = 0
-    
-    # Update button states for turn signals and ACC controls, capture all ACC button state/config for passthrough
-    # turn signal effect
-    self.left_blinker_active  = bool(pt_cp.vl["Blinkmodi_02"]["BM_links"])
-    self.right_blinker_active = bool(pt_cp.vl["Blinkmodi_02"]["BM_rechts"])
-    # turn signal cause
-    ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_stalk(240, pt_cp.vl["SMLS_01"]["BH_Blinker_li"],
-                                                                            pt_cp.vl["SMLS_01"]["BH_Blinker_re"])
-
-    # detect button configuration
-    # for latched main cruise button (or no main button present), there is probably a physical cancel button
-    # existing main cruise push button is probably used as cancel button if present
-    main_cruise_latching = not bool(pt_cp.vl["GRA_ACC_01"]["GRA_Typ_Hauptschalter"])
-    buttons = self.CCP.BUTTONS_ALT if main_cruise_latching else self.CCP.BUTTONS
-    ret.buttonEvents = self.create_button_events(pt_cp, buttons)
-    
-    self.gra_stock_values = pt_cp.vl["GRA_ACC_01"]
-    
-    # Additional safety checks performed in CarInterface.
-    ret.espDisabled = bool(pt_cp.vl["ESP_21"]["ESP_Tastung_passiv"]) # this is also true for ESC Sport mode
-    ret.espActive   = bool(pt_cp.vl["ESP_21"]["ESP_Eingriff"])
-
-    self.ea_hud_stock_values = cam_cp.vl["EA_02"]
+      # EV battery details
+      ret.batteryDetails.charge = pt_cp.vl["Motor_16"]["MO_Energieinhalt_BMS"] # battery charge WattHours
+      if self.CP.networkLocation == NetworkLocation.gateway:
+        ret.batteryDetails.heaterActive = bool(main_cp.vl["MEB_HVEM_03"]["PTC_ON"]) # battery heater active
+        ret.batteryDetails.voltage      = main_cp.vl["MEB_HVEM_01"]["Battery_Voltage"] # battery voltage
+        ret.batteryDetails.capacity     = main_cp.vl["BMS_04"]["BMS_Kapazitaet_02"] * 355 # EV battery capacity Ah * nominal voltage cupra born WattHours
+        ret.batteryDetails.soc          = ret.batteryDetails.charge / ret.batteryDetails.capacity * 100 if ret.batteryDetails.capacity > 0 else 0 # battery SoC in percent
+        ret.batteryDetails.power        = main_cp.vl["MEB_HVEM_01"]["Engine_Power"] # engine power output
+        ret.batteryDetails.temperature  = main_cp.vl["DCDC_03"]["DC_Temperatur"] # dcdc converter temperature
       
     MadsCarState.update_mads(self, ret, pt_cp, hca_status)
 
@@ -561,10 +444,8 @@ class CarState(CarStateBase, MadsCarState):
   def get_can_parsers(CP, CP_SP):
     if CP.flags & VolkswagenFlags.PQ:
       return CarState.get_can_parsers_pq(CP)
-    elif CP.flags & VolkswagenFlags.MEB:
+    elif CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQBEVO):
       return CarState.get_can_parsers_meb(CP)
-    elif CP.flags & VolkswagenFlags.MQBEVO:
-      return CarState.get_can_parsers_mqbevo(CP)
 
     # another case of the 1-50Hz
     cam_messages = []
@@ -591,19 +472,6 @@ class CarState(CarStateBase, MadsCarState):
 
   @staticmethod
   def get_can_parsers_meb(CP):
-    return {
-       Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [
-        # frequency changes too much for the CANParser to figure out
-        #("AWV_03", 1),        # Front Collision Detection (1 Hz when inactive, 50 Hz when active)
-        ("Blinkmodi_02", 1),  # From J519 BCM (sent at 1Hz when no lights active, 50Hz when active)
-        ("SMLS_01", 1),       # From Stalk Controls
-      ], CanBus(CP).pt),
-      Bus.main: CANParser(DBC[CP.carFingerprint][Bus.pt], [], CanBus(CP).main),
-      Bus.cam: CANParser(DBC[CP.carFingerprint][Bus.pt], [], CanBus(CP).cam),
-    }
-    
-  @staticmethod
-  def get_can_parsers_mqbevo(CP):
     return {
        Bus.pt: CANParser(DBC[CP.carFingerprint][Bus.pt], [
         # frequency changes too much for the CANParser to figure out
