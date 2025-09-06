@@ -297,6 +297,7 @@ class CarState(CarStateBase, MadsCarState):
     #ret.parkingBrake = pt_cp.vl["Gateway_73"]["EPB_Status"] in (1, 4) # this signal is not working for newer models
 
     # Update door and trunk/hatch lid open status.
+    # ["Gateway_72"]["ZV_02_alt"] probably is set to 1 if ZV_02 is used and Gateway_72 is obsolete for door states
     if self.CP.flags & VolkswagenFlags.MQBEVO:
       ret.doorOpen = any([pt_cp.vl["Gateway_72"]["ZV_FT_offen"],
                           pt_cp.vl["Gateway_72"]["ZV_BT_offen"],
