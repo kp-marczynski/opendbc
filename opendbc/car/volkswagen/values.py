@@ -107,7 +107,7 @@ class CarControllerParams:
         "laneAssistDeactivTrailer": 5,  # "Lane Assist: no function with trailer"
       }
 
-    elif CP.flags & VolkswagenFlags.MEB:
+    elif CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQBEVO):
       self.LDW_STEP                = 10    # LDW_02 message frequency 10Hz
       self.ACC_HUD_STEP            = 6     # MEB_ACC_01 message frequency 16Hz
       self.STEER_DRIVER_ALLOWANCE  = 60    # Driver torque 0.6 Nm, begin steering reduction from MAX
@@ -235,6 +235,7 @@ class VolkswagenFlags(IntFlag):
   PQ = 2
   MEB = 64
   MEB_GEN2 = 128
+  MQB_EVO = 256
   
 
 
@@ -257,6 +258,13 @@ class VolkswagenMEBPlatformConfig(PlatformConfig):
     self.flags |= VolkswagenFlags.MEB
     if self.flags & VolkswagenFlags.MEB_GEN2:
       self.dbc_dict = {Bus.pt: 'vw_meb_2024', Bus.radar: 'vw_meb_2024'}
+      
+      
+@dataclass
+class VolkswagenMQBevoPlatformConfig(PlatformConfig):
+  dbc_dict: DbcDict = field(default_factory=lambda: {Bus.pt: 'vw_mqbevo', Bus.radar: 'vw_mqbevo'})
+  chassis_codes: set[str] = field(default_factory=set)
+  wmis: set[WMI] = field(default_factory=set)
 
 
 @dataclass
@@ -379,6 +387,12 @@ class CAR(Platforms):
     VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
     chassis_codes={"5G", "AU", "BA", "BE"},
     wmis={WMI.VOLKSWAGEN_MEXICO_CAR, WMI.VOLKSWAGEN_EUROPE_CAR},
+  )
+  VOLKSWAGEN_GOLF_MK8 = VolkswagenMQBPlatformConfig(
+    [VWCarDocs("Volkswagen Golf 2021")],
+    VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
+    chassis_codes={""},
+    wmis={WMI.VOLKSWAGEN_EUROPE_CAR},
   )
   VOLKSWAGEN_JETTA_MK6 = VolkswagenPQPlatformConfig(
     [VWCarDocs("Volkswagen Jetta 2015-18")],

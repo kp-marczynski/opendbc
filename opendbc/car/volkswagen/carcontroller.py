@@ -19,7 +19,7 @@ class CarController(CarControllerBase):
     super().__init__(dbc_names, CP, CP_SP)
     self.CCP = CarControllerParams(CP)
     self.CAN = CanBus(CP)
-    self.CCS = pqcan if CP.flags & VolkswagenFlags.PQ else (mebcan if CP.flags & VolkswagenFlags.MEB else mqbcan)
+    self.CCS = pqcan if CP.flags & VolkswagenFlags.PQ else (mebcan if CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQBEVO) else mqbcan)
     self.PC = pandacan
     self.packer_pt = CANPacker(dbc_names[Bus.pt])
     self.aeb_available = not CP.flags & VolkswagenFlags.PQ
@@ -59,7 +59,7 @@ class CarController(CarControllerBase):
     # **** Steering Controls ************************************************ #
 
     if self.frame % self.CCP.STEER_STEP == 0:
-      if self.CP.flags & VolkswagenFlags.MEB:
+      if self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQBEVO):
         # Logic to avoid HCA refused state:
         #   * steering power as counter and near zero before OP lane assist deactivation
         # MEB rack can be used continously without time limits
@@ -178,7 +178,7 @@ class CarController(CarControllerBase):
       if not self.long_cruise_control:
         stopping = actuators.longControlState == LongCtrlState.stopping
         
-        if self.CP.flags & VolkswagenFlags.MEB:
+        if self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQBEVO):
           # Logic to prevent car error with EPB:
           #   * send a few frames of HMS RAMP RELEASE command at the very begin of long override and right at the end of active long control -> clean exit of ACC car controls
           #   * (1 frame of HMS RAMP RELEASE is enough, but lower the possibility of panda safety blocking it)
@@ -245,7 +245,7 @@ class CarController(CarControllerBase):
     
     if self.frame % self.CCP.ACC_HUD_STEP == 0 and self.CP.openpilotLongitudinalControl:
       if not(CS.acc_type == 3 and self.CP.flags & VolkswagenFlags.PQ):
-        if self.CP.flags & VolkswagenFlags.MEB:
+        if self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQBEVO):
           fcw_alert = hud_control.visualAlert == VisualAlert.fcw
           show_distance_bars = self.frame - self.distance_bar_frame < 400
           gap = max(8, CS.out.vEgo * hud_control.leadFollowTime)
