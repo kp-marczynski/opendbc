@@ -369,6 +369,23 @@ FW_VERSIONS = {
       b'\xf1\x875Q0907572S \xf1\x890780',
     ],
   },
+  CAR.VOLKSWAGEN_GOLF_MK8: {
+    (Ecu.engine, 0x7e0, None): [
+
+    ],
+    (Ecu.srs, 0x715, None): [
+
+    ],
+    (Ecu.eps, 0x712, None): [
+
+    ],
+    (Ecu.fwdRadar, 0x757, None): [
+      b'\xf1\x875WA907572B \xf1\x890395', # Golf 8 2022 
+    ],
+    (Ecu.fwdCamera, 0x74f, None): [
+      b'\xf1\x875WA980653C \xf1\x893301', # Golf 8 2022
+    ],
+  },
   CAR.VOLKSWAGEN_JETTA_MK6: {
     (Ecu.srs, 0x715, None): [
       b'\xf1\x875C0959655M \xf1\x890726\xf1\x82\t00NB1108--------24',

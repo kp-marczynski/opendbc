@@ -421,6 +421,7 @@ int set_safety_hooks(uint16_t mode, uint16_t param) {
 #ifdef CANFD
     {SAFETY_HYUNDAI_CANFD, &hyundai_canfd_hooks},
     {SAFETY_VOLKSWAGEN_MEB, &volkswagen_meb_hooks},
+	{SAFETY_VOLKSWAGEN_MQBEVO, &volkswagen_meb_hooks},
 #endif
 #ifdef ALLOW_DEBUG
     {SAFETY_PSA, &psa_hooks},
