@@ -311,8 +311,7 @@ class CarState(CarStateBase, MadsCarState):
     # Infostufe: BSM LED on, Warnung: BSM LED flashing
     if self.CP.enableBsm:
       # TODO get side assignment
-      bsm_bus = pt_cp if self.CP.flags & VolkswagenFlags.MEB_GEN2 else ext_cp
-      #bsm_bus = pt_cp if "MEB_Side_Assist_01" in pt_cp.vl else ext_cp # do this if not differentiable by model years
+      bsm_bus = pt_cp if "MEB_Side_Assist_01" in pt_cp.vl else cam_cp # bsm is at pt bus for newer models
       ret.leftBlindspot  = bool(bsm_bus.vl["MEB_Side_Assist_01"]["Blind_Spot_Info_Driver"]) or bool(bsm_bus.vl["MEB_Side_Assist_01"]["Blind_Spot_Warn_Driver"])
       ret.rightBlindspot = bool(bsm_bus.vl["MEB_Side_Assist_01"]["Blind_Spot_Info_Passenger"]) or bool(bsm_bus.vl["MEB_Side_Assist_01"]["Blind_Spot_Warn_Passenger"])
 
