@@ -1882,10 +1882,8 @@ CM_ SG_ 1720 KBI_Tankfuellstand_Prozent "Tankfüllstand in %";
 CM_ SG_ 1720 KBI_Nachtanken_erkannt "Statusinformation Nachtankmodus";
 CM_ SG_ 1720 KBI_Tankinhalt_hochaufl "angezeigter Tankinhalt hochauflösend zur Restreichweitenberechnung";
 CM_ SG_ 1720 KBI_Max_Tankinhalt "Mitteilung des maximalen Tankinhalts an das Reichweitenmodul";
-CM_ SG_ 1720 KBI_Reifenumfang_Sekundaer "Fahrzeuge mit unterschiedlichen Reifenumfängen Vorderachse / Hinterachse:
+CM_ SG_ 1720 KBI_Reifenumfang_Sekundaer "Fahrzeuge mit unterschiedlichen Reifenumfängen Vorderachse / Hinterachse:Primärachse: KBI_Reifenumfang Sekundärachse: KBI_Reifenumfang_Sekundaer";
 
-Primärachse: KBI_Reifenumfang
-Sekundärachse: KBI_Reifenumfang_Sekundaer";
 VAL_ 159 EPS_HCA_Status 0 "disabled" 1 "initializing" 2 "fault" 3 "ready" 4 "rejected" 5 "active";
 VAL_ 173 GE_Fahrstufe 5 "P" 6 "R" 7 "N" 8 "D" 9 "S" 10 "E" 13 "T" 14 "T";
 VAL_ 258 EPB_Status 0 "offen" 1 "geschlossen_Parken" 2 "teilgespannt_Halten" 3 "im_Lauf_oeffnen" 4 "im_Lauf_schliessen" 5 "tbd" 6 "Init" 7 "unbekannt";
