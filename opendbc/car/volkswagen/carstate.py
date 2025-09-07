@@ -291,7 +291,7 @@ class CarState(CarStateBase, MadsCarState):
 
     # Update gas, brakes, and gearshift.
     gas_offset       = 0 if self.CP.flags & VolkswagenFlags.MQB_EVO else 0.4
-    ret.gasPressed   = pt_cp.vl["Motor_54"]["Accelerator_Pressure"] - gas_offset
+    ret.gasPressed   = (pt_cp.vl["Motor_54"]["Accelerator_Pressure"] - gas_offset) > 0
     ret.brakePressed = bool(pt_cp.vl["Motor_14"]["MO_Fahrer_bremst"]) # includes regen braking by user
     ret.brake        = pt_cp.vl["ESC_51"]["Brake_Pressure"]
 
