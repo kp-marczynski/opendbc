@@ -256,6 +256,15 @@ BO_ 260 EPB_01: 8 Gateway_MQB
  SG_ EPB_Spannkraft : 56|5@1+ (1,0) [0|29] "Unit_KiloNewto" Getriebe_DQ_Hybrid_MQB,Getriebe_DQ_MQB
  SG_ EPB_Status : 61|2@1+ (1,0) [0|3] "" Getriebe_DQ_Hybrid_MQB,Getriebe_DQ_MQB,Motor_Diesel_MQB,Motor_Hybrid_MQB,Motor_Otto_MQB
 
+BO_ 261 VMM_01: 8 XXX
+ SG_ CRC : 0|8@1+ (1,0) [0|255] "" XXX
+ SG_ CNT : 8|4@1+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_5 : 13|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_4 : 20|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_3 : 32|1@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_1 : 40|2@1+ (1,0) [0|3] "" XXX
+ SG_ Brake : 53|7@1+ (1,0) [0|3] "" XXX
+
 BO_ 262 ESP_05: 8 Gateway_MQB
  SG_ CHECKSUM : 0|8@1+ (1,0) [0|255] "" Airbag_MQB,Getriebe_DQ_Hybrid_MQB,Getriebe_DQ_MQB,Motor_Diesel_MQB,Motor_Hybrid_MQB,Motor_Otto_MQB
  SG_ COUNTER : 8|4@1+ (1,0) [0|15] "" Airbag_MQB,Getriebe_DQ_Hybrid_MQB,Getriebe_DQ_MQB,Motor_Diesel_MQB,Motor_Hybrid_MQB,Motor_Otto_MQB
