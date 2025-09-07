@@ -811,36 +811,15 @@ BO_ 869 BEM_05: 8 Gateway_MQB
  SG_ BEM_HYB_DC_uSollLV : 50|6@1+ (0.1,10.6) [10.6|16] "Unit_Volt" LEH_MQB
  SG_ BEM_HYB_DC_uMinLV : 56|8@1+ (0.1,0) [0|25.3] "Unit_Volt" LEH_MQB
 
-BO_ 870 Blinkmodi_02: 8 Gateway
- SG_ BM_ZV_auf : 12|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_ZV_zu : 13|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_DWA_ein : 14|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_DWA_Alarm : 15|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_Crash : 16|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_Panik : 17|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_Not_Bremsung : 18|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_GDO : 19|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ BM_Warnblinken : 20|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_Taxi_Notalarm : 21|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_Telematik : 22|1@1+ (1,0) [0|1] "" ZR_High
+BO_ 870 Blinkmodi_02: 8 XXX
+ SG_ Hazard_Switch : 20|1@1+ (1,0) [0|1] "" XXX
  SG_ BM_links : 23|1@1+ (1,0) [0|1] "" ZR_High
  SG_ BM_rechts : 24|1@1+ (1,0) [0|1] "" ZR_High
- SG_ Blinken_li_Fzg_Takt : 25|1@1+ (1,0) [0|1] "" ZR_High
- SG_ Blinken_re_Fzg_Takt : 26|1@1+ (1,0) [0|1] "" ZR_High
- SG_ Blinken_li_Kombi_Takt : 27|1@1+ (1,0) [0|1] "" ZR_High,ZR_LIMU,ZR_MIB_TOP_ab_Gen3,ZR_Standard
- SG_ Blinken_re_Kombi_Takt : 28|1@1+ (1,0) [0|1] "" ZR_High,ZR_LIMU,ZR_MIB_TOP_ab_Gen3,ZR_Standard
- SG_ BM_NBA_n_codiert_n_aktiv : 29|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ BM_NBA_Status : 30|2@1+ (1,0) [0|3] "" Vector__XXX
- SG_ BM_WBT_Beleuchtung : 32|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_HD_Oeffnung_angelernt : 33|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ BM_Autobahn : 34|1@1+ (1,0) [0|1] "" ZR_High,ZR_LIMU,ZR_MIB_TOP_ab_Gen3
- SG_ BM_Rollenmodus_Blinken : 35|1@1+ (1,0) [0|1] "" Vector__XXX
- SG_ BM_Recas : 36|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_Wischblinken : 37|1@1+ (1,0) [0|1] "" ZR_High
- SG_ BM_Telematik_Abbruchgrund : 38|6@1+ (1,0) [0|63] "" Vector__XXX
- SG_ BM_PiloPa : 44|1@1+ (1,0) [0|1] "" ZR_High
- SG_ Unknown_01 : 45|2@1+ (1,0) [0|3] "" XXX
- SG_ DWA_Alarmquelle : 59|5@1+ (1,0) [0|31] "" ZR_High
+ SG_ Left_Turn_Exterior_Bulb_1 : 25|1@1+ (1,0) [0|1] "" XXX
+ SG_ Right_Turn_Exterior_Bulb_1 : 26|1@1+ (1,0) [0|1] "" XXX
+ SG_ Left_Turn_Exterior_Bulb_2 : 27|1@1+ (1,0) [0|1] "" XXX
+ SG_ Right_Turn_Exterior_Bulb_2 : 28|1@1+ (1,0) [0|1] "" XXX
+ SG_ Fast_Send_Rate_Active : 37|1@1+ (1,0) [0|1] "" XXX
 
 BO_ 873 CAMERA_NEW_4: 8 XXX
 
@@ -2045,34 +2024,8 @@ VAL_ 804 ACC_Tempolimit 0 "keine_Anzeige" 1 "5_zulHoechstgeschw" 2 "7_zulHoechst
 VAL_ 804 ACC_Charisma_FahrPr 0 "keine_Funktion" 1 "Programm_1" 2 "Programm_2" 3 "Programm_3" 4 "Programm_4" 5 "Programm_5" 6 "Programm_6" 7 "Programm_7" 8 "Programm_8" 9 "Programm_9" 10 "Programm_10" 11 "Programm_11" 12 "Programm_12" 13 "Programm_13" 14 "Programm_14" 15 "Programm_15";
 VAL_ 804 ACC_Charisma_Status 0 "Init" 1 "verfuegbar" 2 "nicht_verfuegbar" 3 "asynchron_durch_Fahrerwunsch";
 VAL_ 804 ACC_Texte_Abstandswarner 0 "keine_Anzeige" 1 "Systemstoerung" 2 "keine_Sensorsicht" 3 "zurzeit_eingeschraenkt";
-VAL_ 870 BM_ZV_auf 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_ZV_zu 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_DWA_ein 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_DWA_Alarm 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Crash 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Panik 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Not_Bremsung 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_GDO 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Warnblinken 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Taxi_Notalarm 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Telematik 0 "inaktiv" 1 "aktiv";
 VAL_ 870 BM_links 0 "inaktiv" 1 "aktiv";
 VAL_ 870 BM_rechts 0 "inaktiv" 1 "aktiv";
-VAL_ 870 Blinken_li_Fzg_Takt 0 "Blinker_links_ausgeschaltet" 1 "Blinker_links_eingeschaltet";
-VAL_ 870 Blinken_re_Fzg_Takt 0 "Blinker_rechts_ausgeschaltet" 1 "Blinker_rechts_eingeschaltet";
-VAL_ 870 Blinken_li_Kombi_Takt 0 "Blinkerkontrolllampe_links_ausgeschaltet" 1 "Blinkerkontrolllampe_links_eingeschaltet";
-VAL_ 870 Blinken_re_Kombi_Takt 0 "Blinkerkontrolllampe_rechts_ausgeschaltet" 1 "Blinkerkontrolllampe_rechts_eingeschaltet";
-VAL_ 870 BM_NBA_n_codiert_n_aktiv 0 "codiert_AND_kein_Fehler" 1 "nicht_codiert_OR_Fehler_erkannt";
-VAL_ 870 BM_NBA_Status 0 "NBA_nicht_aktiv" 1 "BRL_Dunkelphase" 3 "BRL_Hellphase";
-VAL_ 870 BM_WBT_Beleuchtung 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_HD_Oeffnung_angelernt 0 "keine_Quittierung" 1 "Quittierung";
-VAL_ 870 BM_Autobahn 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Rollenmodus_Blinken 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Recas 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Wischblinken 0 "inaktiv" 1 "aktiv";
-VAL_ 870 BM_Telematik_Abbruchgrund 0 "Init" 1 "speed_out_of_range" 2 "defect" 3 "clamp_s_on" 4 "clamp_15_on" 5 "door_open" 6 "engine_hood_open" 7 "trunk_open" 8 "convertible_top_not_locked" 9 "horn_activated_by_user" 10 "Higher_Prioritiy_Function_active" 11 "Central_Lock_status_changed" 12 "Request_Dropped_by_Requester" 13 "Service_Duration_Expired" 14 "not_possible_due_to_coding" 15 "no_reason_or_unknown_timeout";
-VAL_ 870 BM_PiloPa 0 "PiloPa_Blinkerquittierung_inaktiv" 1 "PiloPa_Blinkerquittierung_aktiv";
-VAL_ 870 DWA_Alarmquelle 0 "kein_Ausloesegrund" 1 "Tuerkontakt_Fahrertuer" 2 "Tuerkontakt_Beifahrertuer" 3 "Tuerkontakt_hinten_links" 4 "Tuerkontakt_hinten_rechts" 5 "Motorhaubenkontakt_vorne" 6 "Kofferraum_hinten" 7 "Masseschleife_der_Heckscheibe" 8 "Innenraumueberwachung" 9 "Alarm_durch_Noteinstieg" 10 "Sounder" 11 "Neigungssensor" 12 "TSG_FT_am_CAN_Bus" 13 "TSG_BT_am_CAN_Bus" 14 "TSG_HFS_am_CAN_Bus" 15 "TSG_HBFS_am_CAN_Bus" 16 "Klemme_15" 17 "Klemme_15sig" 18 "frei" 19 "Anhaengerueberwachung" 20 "Scheinwerferueberwachung_links" 21 "Scheinwerferueberwachung_rechts" 22 "Handschuhkasten" 23 "Verdeckueberwachung" 24 "OBD_Alarm" 25 "Power_on_Reset" 30 "Init" 31 "Fehler";
 VAL_ 980 BH_Blinker_li 0 "nicht_betaetigt" 1 "Blinkerhebel_Pos_li_betaetigt";
 VAL_ 980 BH_Blinker_re 0 "nicht_betaetigt" 1 "Blinkerhebel_Pos_re_betaetigt";
 VAL_ 980 BH_Lichthupe 0 "nicht_betaetigt" 1 "Blinkerhebel in Richtung Lichthupe betaetigt";
