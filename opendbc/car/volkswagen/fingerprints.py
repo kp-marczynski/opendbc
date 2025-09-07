@@ -370,15 +370,10 @@ FW_VERSIONS = {
     ],
   },
   CAR.VOLKSWAGEN_GOLF_MK8: {
-    (Ecu.engine, 0x7e0, None): [
-
-    ],
-    (Ecu.srs, 0x715, None): [
-
-    ],
-    (Ecu.eps, 0x712, None): [
-
-    ],
+    (Ecu.engine, 0x17fc0076, None): [],
+    (Ecu.transmission, 0x7e1, None): [],
+    (Ecu.srs, 0x715, None): [],
+    (Ecu.eps, 0x712, None): [],
     (Ecu.fwdRadar, 0x757, None): [
       b'\xf1\x875WA907572B \xf1\x890395', # Golf 8 2022 
     ],
