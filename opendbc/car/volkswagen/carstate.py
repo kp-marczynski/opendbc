@@ -56,7 +56,7 @@ class CarState(CarStateBase, MadsCarState):
 
     if self.CP.flags & VolkswagenFlags.PQ:
       return self.update_pq(pt_cp, cam_cp, main_cp, ext_cp)
-    elif self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQBEVO):
+    elif self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
       return self.update_meb(pt_cp, main_cp, cam_cp, ext_cp)
 
     ret = structs.CarState()
@@ -340,7 +340,7 @@ class CarState(CarStateBase, MadsCarState):
     accFaulted = pt_cp.vl["Motor_51"]["TSK_Status"] in (6, 7)
     ret.accFaulted = self.update_acc_fault(accFaulted, parking_brake=ret.parkingBrake, drive_mode=drive_mode)
 
-    if self.CP.flags & VolkswagenFlags.MQBEVO:
+    if self.CP.flags & VolkswagenFlags.MQB_EVO:
       self.esp_hold_confirmation = bool(pt_cp.vl["ESP_21"]["ESP_Haltebestaetigung"])
     else:
       self.esp_hold_confirmation = bool(pt_cp.vl["VMM_02"]["ESP_Hold"]) # observe for newer MEB gen
@@ -438,7 +438,7 @@ class CarState(CarStateBase, MadsCarState):
   def get_can_parsers(CP, CP_SP):
     if CP.flags & VolkswagenFlags.PQ:
       return CarState.get_can_parsers_pq(CP)
-    elif CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQBEVO):
+    elif CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
       return CarState.get_can_parsers_meb(CP)
 
     # another case of the 1-50Hz
