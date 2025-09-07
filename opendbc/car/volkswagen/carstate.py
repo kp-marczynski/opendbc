@@ -290,7 +290,7 @@ class CarState(CarStateBase, MadsCarState):
     #ret.carFaultedNonCritical = cam_cp.vl["EA_01"]["EA_Funktionsstatus"] in (3, 4, 5, 6) # prepared, not tested
 
     # Update gas, brakes, and gearshift.
-    ret.gasPressed   = pt_cp.vl["Motor_51"]["Accelerator_Pressure"] > 0
+    ret.gasPressed   = pt_cp.vl["Motor_54"]["Accelerator_Pressure"] > 0
     ret.brakePressed = bool(pt_cp.vl["Motor_14"]["MO_Fahrer_bremst"]) # includes regen braking by user
     ret.brake        = pt_cp.vl["ESC_51"]["Brake_Pressure"]
 
