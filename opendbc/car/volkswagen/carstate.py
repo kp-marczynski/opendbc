@@ -260,7 +260,8 @@ class CarState(CarStateBase, MadsCarState):
       pt_cp.vl["ESC_51"]["HR_Radgeschw"],
     )
 
-    #ret.vEgoCluster = pt_cp.vl["Kombi_01"]["KBI_angez_Geschw"] * CV.KPH_TO_MS
+    if self.CP.flags & VolkswagenFlags.KOMBI_PRESENT:
+      ret.vEgoCluster = pt_cp.vl["Kombi_01"]["KBI_angez_Geschw"] * CV.KPH_TO_MS
     ret.standstill = ret.vEgoRaw == 0
 
     # Update EPS position and state info. For signed values, VW sends the sign in a separate signal.
