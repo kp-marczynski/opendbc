@@ -291,13 +291,9 @@ static void volkswagen_meb_rx_hook(const CANPacket_t *msg) {
 
     // update accel pedal
     if (msg->addr == MSG_Motor_54) {
-	  int gas_offset = 40;
-	  // MEB does have a static offset, MQBevo does not
-	  if (volkswagen_no_gas_offset) {
-	    gas_offset = 0;
-	  }
-      int accel_pedal_value = msg->data[21] - gas_offset;
-      gas_pressed = accel_pedal_value != 0;
+	  int gas_offset = volkswagen_no_gas_offset ? 0 : 4; // MEB static offset, MQBevo no offset
+      int accel_pedal_value = ((msg->data[21] * 4) - 144) - gas_offset;
+      gas_pressed = accel_pedal_value > 0;
     }
 
   }
