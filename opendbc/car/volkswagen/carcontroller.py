@@ -18,7 +18,7 @@ class CarController(CarControllerBase):
     super().__init__(dbc_names, CP, CP_SP)
     self.CCP = CarControllerParams(CP)
     self.CAN = CanBus(CP)
-    self.CCS = pqcan if CP.flags & VolkswagenFlags.PQ else (mebcan if CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO) else mqbcan)
+    self.CCS = pqcan if CP.flags & VolkswagenFlags.PQ else (mebcan if CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO) else mqbcan)
     self.PC = pandacan
     self.packer_pt = CANPacker(dbc_names[Bus.pt])
     self.aeb_available = not CP.flags & VolkswagenFlags.PQ
@@ -63,7 +63,7 @@ class CarController(CarControllerBase):
     # **** Steering Controls ************************************************ #
 
     if self.frame % self.CCP.STEER_STEP == 0:
-      if self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+      if self.CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
         # Logic to avoid HCA refused state:
         #   * steering power as counter and near zero before OP lane assist deactivation
         # MEB rack can be used continously without time limits
@@ -143,7 +143,7 @@ class CarController(CarControllerBase):
         can_sends.append(self.CCS.create_eps_update(self.packer_pt, self.CAN.cam, CS.eps_stock_values, ea_simulated_torque))
 
     # Emergency Assist intervention
-    if self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO) and self.CP.flags & VolkswagenFlags.STOCK_KLR_PRESENT:
+    if self.CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO) and self.CP.flags & VolkswagenFlags.STOCK_KLR_PRESENT:
       # send capacitive steering wheel touched
       # propably EA is stock activated only for cars equipped with capacitive steering wheel
       # (also stock long does resume from stop as long as hands on is detected additionally to OP resume spam)
@@ -158,7 +158,7 @@ class CarController(CarControllerBase):
     # "Wechselblinken" means switching between hazards and one sided indicators for every indicator cycle (VW MEB full cycle: 0.8 seconds, 1st normal, 2nd hazards)
     # user input has hgher prio than EA indicating, post cycle handover is done via actual indicator signal if EA would already request
     # signaling indicators for 1 frame to trigger the first non hazard cycle, retrigger after the car signals a fully ended cycle
-    if self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+    if self.CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
       if self.frame % 2 == 0:
         blinker_active = CS.left_blinker_active or CS.right_blinker_active
         left_blinker = CC.leftBlinker if not blinker_active else False
@@ -182,7 +182,7 @@ class CarController(CarControllerBase):
       if not self.long_cruise_control:
         stopping = actuators.longControlState == LongCtrlState.stopping
         
-        if self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+        if self.CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
           # Logic to prevent car error with EPB:
           #   * send a few frames of HMS RAMP RELEASE command at the very begin of long override and right at the end of active long control -> clean exit of ACC car controls
           #   * (1 frame of HMS RAMP RELEASE is enough, but lower the possibility of panda safety blocking it)
@@ -236,7 +236,7 @@ class CarController(CarControllerBase):
       if hud_control.visualAlert in (VisualAlert.steerRequired, VisualAlert.ldw):
         hud_alert = self.CCP.LDW_MESSAGES["laneAssistTakeOver"]
 
-      if self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+      if self.CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
         sound_alert = self.CCP.LDW_SOUNDS["Chime"] if hud_alert == self.CCP.LDW_MESSAGES["laneAssistTakeOver"] else self.CCP.LDW_SOUNDS["None"]
         can_sends.append(self.CCS.create_lka_hud_control(self.packer_pt, self.CAN.pt, CS.ldw_stock_values, CC.latActive,
                                                          CS.out.steeringPressed, hud_alert, hud_control, sound_alert))
@@ -249,7 +249,7 @@ class CarController(CarControllerBase):
     
     if self.frame % self.CCP.ACC_HUD_STEP == 0 and self.CP.openpilotLongitudinalControl:
       if not(CS.acc_type == 3 and self.CP.flags & VolkswagenFlags.PQ):
-        if self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+        if self.CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
           fcw_alert = hud_control.visualAlert == VisualAlert.fcw
           show_distance_bars = self.frame - self.distance_bar_frame < 400
           gap = max(8, CS.out.vEgo * hud_control.leadFollowTime)
