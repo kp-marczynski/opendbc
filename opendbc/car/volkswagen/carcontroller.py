@@ -49,7 +49,7 @@ class CarController(CarControllerBase):
     self.speed_limit_changed_timer = 0
     self.LateralController = (
       LatControlCurvature(self.CCP.CURVATURE_PID, self.CCP.CURVATURE_LIMITS.CURVATURE_MAX, 1 / (DT_CTRL * self.CCP.STEER_STEP))
-      if (CP.flags & VolkswagenFlags.MEB)
+      if (CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO))
       else None
     )
 
