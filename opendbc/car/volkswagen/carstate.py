@@ -57,7 +57,7 @@ class CarState(CarStateBase, MadsCarState):
 
     if self.CP.flags & VolkswagenFlags.PQ:
       return self.update_pq(pt_cp, cam_cp, main_cp, ext_cp)
-    elif self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+    elif self.CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
       return self.update_meb(pt_cp, main_cp, cam_cp, ext_cp)
 
     ret = structs.CarState()
@@ -444,7 +444,7 @@ class CarState(CarStateBase, MadsCarState):
   def get_can_parsers(CP, CP_SP):
     if CP.flags & VolkswagenFlags.PQ:
       return CarState.get_can_parsers_pq(CP)
-    elif CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+    elif CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
       return CarState.get_can_parsers_meb(CP)
 
     # another case of the 1-50Hz
