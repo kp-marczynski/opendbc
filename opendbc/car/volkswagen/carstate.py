@@ -347,7 +347,9 @@ class CarState(CarStateBase, MadsCarState):
     if self.CP.flags & VolkswagenFlags.MQB_EVO:
       self.esp_hold_confirmation = bool(pt_cp.vl["ESP_21"]["ESP_Haltebestaetigung"])
     else:
-      self.esp_hold_confirmation = bool(pt_cp.vl["VMM_02"]["ESP_Hold"]) # observe for newer MEB gen
+      # for hold detection: VMM_02 ESP_Hold Signal is off timing and probably wrong
+      # use a motion state signal instead for now
+      self.esp_hold_confirmation = pt_cp.vl["ESC_50"]["Motion_State"] == 3 # full stop
       
     ret.cruiseState.standstill = self.CP.pcmCruise and self.esp_hold_confirmation
 
