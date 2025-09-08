@@ -373,7 +373,7 @@ class CarState(CarStateBase, MadsCarState):
     # turn signal effect
     self.left_blinker_active  = bool(pt_cp.vl["Blinkmodi_02"]["BM_links"])
     self.right_blinker_active = bool(pt_cp.vl["Blinkmodi_02"]["BM_rechts"])
-    # turn signal cause
+    # turn signal cause (see door logic same schema ["Gateway_72"]["SMLS_01_alt"] is not neccessary -> SMLS_01 seems to always work)
     ret.leftBlinker, ret.rightBlinker = self.update_blinker_from_stalk(240, pt_cp.vl["SMLS_01"]["BH_Blinker_li"],
                                                                             pt_cp.vl["SMLS_01"]["BH_Blinker_re"])
 
