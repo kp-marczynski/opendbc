@@ -39,7 +39,7 @@ class CarInterface(CarInterfaceBase):
       # Panda ALLOW_DEBUG firmware required.
       #ret.dashcamOnly = True
 
-    elif ret.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+    elif ret.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
       # Set global MEB parameters
       if ret.flags & VolkswagenFlags.MEB:
         safety_configs = [get_safety_config(structs.CarParams.SafetyModel.volkswagenMeb)]
@@ -106,7 +106,7 @@ class CarInterface(CarInterfaceBase):
     if ret.flags & VolkswagenFlags.PQ:
       ret.steerActuatorDelay = 0.3
       CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning)
-    elif ret.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+    elif ret.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
       ret.steerActuatorDelay = 0.3
     else:
       ret.steerActuatorDelay = 0.1
@@ -137,7 +137,7 @@ class CarInterface(CarInterfaceBase):
     ret.pcmCruise = not ret.openpilotLongitudinalControl
     ret.autoResumeSng = ret.minEnableSpeed == -1
 
-    if ret.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+    if ret.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
       ret.startingState = True # OP long starting state is used
       ret.startAccel = 0.85 # ~0.85 m/s^2 for brake release
       ret.vEgoStarting = 0.5 # minimum ~0.5 m/s acc starting state is neccessary to not fault the car
