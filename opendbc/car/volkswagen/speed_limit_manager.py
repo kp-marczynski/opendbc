@@ -36,7 +36,7 @@ class SpeedLimitManager:
 
   def update(self, current_speed_ms, psd_04, psd_05, psd_06, vze, raining):
     # try reading speed form traffic sign recognition
-    if vze and self.CP.flags & VolkswagenFlags.MEB:
+    if vze and self.CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
       self._receive_speed_limit_vze_meb(vze)
 
     # try reading speed from predicative street data
