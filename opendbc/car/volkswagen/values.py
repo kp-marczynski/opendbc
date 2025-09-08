@@ -107,7 +107,7 @@ class CarControllerParams:
         "laneAssistDeactivTrailer": 5,  # "Lane Assist: no function with trailer"
       }
 
-    elif CP.flags & (VolkswagenFlags.MEB || VolkswagenFlags.MQB_EVO):
+    elif CP.flags & (VolkswagenFlags.MEB | VolkswagenFlags.MQB_EVO):
       self.LDW_STEP                = 10    # LDW_02 message frequency 10Hz
       self.ACC_HUD_STEP            = 6     # MEB_ACC_01 message frequency 16Hz
       self.STEER_DRIVER_ALLOWANCE  = 60    # Driver torque 0.6 Nm, begin steering reduction from MAX
