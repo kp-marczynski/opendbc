@@ -261,8 +261,8 @@ class CarState(CarStateBase, MadsCarState):
       pt_cp.vl["ESC_51"]["HR_Radgeschw"],
     )
 
-    if self.CP.flags & VolkswagenFlags.KOMBI_PRESENT:
-      ret.vEgoCluster = pt_cp.vl["Kombi_01"]["KBI_angez_Geschw"] * CV.KPH_TO_MS
+    # if self.CP.flags & VolkswagenFlags.KOMBI_PRESENT:
+    #   ret.vEgoCluster = pt_cp.vl["Kombi_01"]["KBI_angez_Geschw"] * CV.KPH_TO_MS
     ret.standstill = ret.vEgoRaw == 0
 
     # Update EPS position and state info. For signed values, VW sends the sign in a separate signal.
@@ -295,8 +295,8 @@ class CarState(CarStateBase, MadsCarState):
     ret.brakePressed = bool(pt_cp.vl["Motor_14"]["MO_Fahrer_bremst"]) # includes regen braking by user
     ret.brake        = pt_cp.vl["ESC_51"]["Brake_Pressure"]
 
-    ret.parkingBrake = pt_cp.vl["ESC_50"]["EPB_Status"] in (1, 4) # EPB closing or closed (candidate for all plattforms)
-    #ret.parkingBrake = pt_cp.vl["Gateway_73"]["EPB_Status"] in (1, 4) # this signal is not working for newer models
+    # ret.parkingBrake = pt_cp.vl["ESC_50"]["EPB_Status"] in (1, 4) # EPB closing or closed (candidate for all plattforms)
+    ret.parkingBrake = pt_cp.vl["Gateway_73"]["EPB_Status"] in (1, 4) # this signal is not working for newer models
 
     # Update door and trunk/hatch lid open status.
     if not (self.CP.flags & VolkswagenFlags.MQB_EVO):
@@ -344,12 +344,13 @@ class CarState(CarStateBase, MadsCarState):
     accFaulted = pt_cp.vl["Motor_51"]["TSK_Status"] in (6, 7)
     ret.accFaulted = self.update_acc_fault(accFaulted, parking_brake=ret.parkingBrake, drive_mode=drive_mode)
 
-    if self.CP.flags & VolkswagenFlags.MQB_EVO:
-      self.esp_hold_confirmation = bool(pt_cp.vl["ESP_21"]["ESP_Haltebestaetigung"])
-    else:
-      # for hold detection: VMM_02 ESP_Hold Signal is off timing and probably wrong
-      # use a motion state signal instead for now
-      self.esp_hold_confirmation = pt_cp.vl["ESC_50"]["Motion_State"] == 3 # full stop
+    self.esp_hold_confirmation = bool(pt_cp.vl["VMM_02"]["ESP_Hold"])  # observe for newer gen
+    # if self.CP.flags & VolkswagenFlags.MQB_EVO:
+    #   self.esp_hold_confirmation = bool(pt_cp.vl["ESP_21"]["ESP_Haltebestaetigung"])
+    # else:
+    #   # for hold detection: VMM_02 ESP_Hold Signal is off timing and probably wrong
+    #   # use a motion state signal instead for now
+    #   self.esp_hold_confirmation = pt_cp.vl["ESC_50"]["Motion_State"] == 3 # full stop
 
     ret.cruiseState.standstill = self.CP.pcmCruise and self.esp_hold_confirmation
 
