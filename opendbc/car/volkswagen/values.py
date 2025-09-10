@@ -395,8 +395,8 @@ class CAR(Platforms):
   VOLKSWAGEN_GOLF_MK8 = VolkswagenMQBevoPlatformConfig(
     [VWCarDocs("Volkswagen Golf 2021")],
     VolkswagenCarSpecs(mass=1397, wheelbase=2.62),
-    chassis_codes={"CD"},
-    wmis={WMI.VOLKSWAGEN_EUROPE_CAR},
+    chassis_codes={"CD", "KL"}, #Golf 8 2022, Seat Leon MK4
+    wmis={WMI.VOLKSWAGEN_EUROPE_CAR, WMI.SEAT},
   )
   VOLKSWAGEN_JETTA_MK6 = VolkswagenPQPlatformConfig(
     [VWCarDocs("Volkswagen Jetta 2015-18")],
