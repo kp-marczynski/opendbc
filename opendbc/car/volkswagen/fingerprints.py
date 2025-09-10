@@ -370,15 +370,31 @@ FW_VERSIONS = {
     ],
   },
   CAR.VOLKSWAGEN_GOLF_MK8: {
-    (Ecu.engine, 0x17fc0076, None): [],
-    (Ecu.transmission, 0x7e1, None): [],
-    (Ecu.srs, 0x715, None): [],
+    (Ecu.engine, 0x7e0, None): [],
+    (Ecu.transmission, 0x7e1, None): [
+      b'\xf1\x870CW906556JA\xf1\x890780', # Seat Leon MK4 (1)
+    ],
+    (Ecu.srs, 0x715, None): [
+      b'\xf1\x871EA959655CK\xf1\x890166', # Seat Leon MK4 (1)
+    ],
     (Ecu.eps, 0x712, None): [],
+    (Ecu.cornerRadar, 0x74e, None): [ # rear radar right
+      b'\xf1\x872Q0907686E \xf1\x890284', # Seat Leon MK4 (1)
+    ],
+    (Ecu.adas, 0x769, None): [ # rear camera
+      b'\xf1\x875WA980556C \xf1\x890314', # Golf 8 2022 (1)
+      b'\xf1\x875WA980556D \xf1\x890344', # Seat Leon MK4 (1)
+    ],
+    (Ecu.parkingAdas, 0x70a, None): [ # park distance control
+      b'\xf1\x875WA919298A \xf1\x890230', # Seat Leon MK4 (1)
+    ],
     (Ecu.fwdRadar, 0x757, None): [
-      b'\xf1\x875WA907572B \xf1\x890395', # Golf 8 2022 
+      b'\xf1\x875WA907572B \xf1\x890395', # Golf 8 2022 (1)
+      #b'\xf1\x875WA907572B \xf1\x890395', # Seat Leon MK4 (1)
     ],
     (Ecu.fwdCamera, 0x74f, None): [
-      b'\xf1\x875WA980653C \xf1\x893301', # Golf 8 2022
+      b'\xf1\x875WA980653C \xf1\x893301', # Golf 8 2022 (1)
+      b'\xf1\x875WA980653A \xf1\x893129', # Seat Leon MK4 (1)
     ],
   },
   CAR.VOLKSWAGEN_JETTA_MK6: {
