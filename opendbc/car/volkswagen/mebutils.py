@@ -1,6 +1,7 @@
 import numpy as np
 from opendbc.car.common.conversions import Conversions as CV
-
+from opendbc.car.common.pid import PIDController
+from opendbc.car import DT_CTRL
 
 def get_long_jerk_limits(enabled, override, distance, has_lead, accel, accel_last, jerk_up, jerk_down, dy_up, dy_down, dt,
                          critical_state, jerk_limit_min=0.5, jerk_limit_max=5.0):
@@ -10,7 +11,7 @@ def get_long_jerk_limits(enabled, override, distance, has_lead, accel, accel_las
   # (2) sending accel = 0 and allowing a high jerk results in a abrupt accel cut -> lack of comfort
   filter_gain_distance = [0, 100]
   filter_gain_values = [0.9, 0.65]
-                           
+
   if not enabled:
     return 0., 0., 0., 0.
 
@@ -26,7 +27,7 @@ def get_long_jerk_limits(enabled, override, distance, has_lead, accel, accel_las
     dy_down = 0.
   else:
     filter_gain = np.interp(distance, filter_gain_distance, filter_gain_values) if has_lead else filter_gain_values[1]
-    
+
     j = (accel - accel_last) / dt
 
     tgt_up = abs(j) if j > 0 else 0.
@@ -67,7 +68,7 @@ def get_long_control_limits(enabled: bool, speed: float, set_speed: float, dista
 
   # how far can the true accel vary upwards from requested accel
   set_speed_diff_up = max(0, abs(speed) - abs(set_speed)) # set speed difference down requested by user or speed overshoot (includes hud - real speed difference!)
-  set_speed_diff_up_factor = np.interp(set_speed_diff_up, [1, 1.75], [1., 0.]) # faster requested speed decrease and less speed overshoot downhill 
+  set_speed_diff_up_factor = np.interp(set_speed_diff_up, [1, 1.75], [1., 0.]) # faster requested speed decrease and less speed overshoot downhill
   lower_limit = np.interp(distance, [0, 100], [lower_limit_min, lower_limit_max]) if has_lead else lower_limit_max # base line based on distance
   lower_limit = lower_limit * set_speed_diff_up_factor
 
@@ -108,7 +109,7 @@ def map_speed_to_acc_tempolimit(v_ms):
       break
 
   return acc_value
-  
+
 def get_acc_warning_meb(self, acc_hud):
   # this works as long our radar does not fault while using OP
   if (acc_hud["ACC_Status_ACC"] in (3, 4) # ACC active or in override mode
@@ -118,3 +119,52 @@ def get_acc_warning_meb(self, acc_hud):
       and acc_hud["ACC_Display_Prio"] == 0): # this warning has highest priority
     return True
   return False
+
+class MultiplicativeUnwindPID(PIDController):
+  def __init__(self, k_p, k_i, k_f=0., k_d=0., pos_limit=1e308, neg_limit=-1e308, rate=100):
+    super().__init__(k_p, k_i, k_f=k_f, k_d=k_d, pos_limit=pos_limit, neg_limit=neg_limit, rate=rate)
+
+  def update(self, error, error_rate=0.0, speed=0.0, override=False, feedforward=0., freeze_integrator=False):
+    self.speed = speed
+
+    self.p = float(error) * self.k_p
+    self.f = feedforward * self.k_f
+    self.d = error_rate * self.k_d
+
+    if override:
+      self.i *= (1.0 - self.i_unwind_rate)
+      if abs(self.i) < 1e-10:
+        self.i = 0.0
+    else:
+      if not freeze_integrator:
+        self.i = self.i + error * self.k_i * self.i_rate
+
+        # Clip i to prevent exceeding control limits
+        control_no_i = self.p + self.d + self.f
+        control_no_i = np.clip(control_no_i, self.neg_limit, self.pos_limit)
+        self.i = np.clip(self.i, self.neg_limit - control_no_i, self.pos_limit - control_no_i)
+
+    control = self.p + self.i + self.d + self.f
+
+    self.control = np.clip(control, self.neg_limit, self.pos_limit)
+    return self.control
+
+class LatControlCurvature():
+  def __init__(self, pid_params, limit, rate):
+    self.pid = MultiplicativeUnwindPID((pid_params.kpBP, pid_params.kpV),
+                                       (pid_params.kiBP, pid_params.kiV),
+                                       k_f=pid_params.kf, pos_limit=limit, neg_limit=-limit,
+                                       rate=rate)
+  def reset(self):
+    self.pid.reset()
+
+  def update(self, CS, CC, desired_curvature):
+    actual_curvature_vm    = CC.currentCurvature # includes roll
+    actual_curvature_pose  = CC.angularVelocity[2] / max(CS.vEgo, 0.1)
+    actual_curvature       = np.interp(CS.vEgo, [2.0, 5.0], [actual_curvature_vm, actual_curvature_pose])
+    desired_curvature_corr = desired_curvature - CC.rollCompensation
+    error                  = desired_curvature - actual_curvature
+    freeze_integrator      = CC.steerLimited or CS.vEgo < 5
+    output_curvature       = self.pid.update(error, feedforward=desired_curvature_corr, speed=CS.vEgo,
+                                             freeze_integrator=freeze_integrator, override=CS.steeringPressed)
+    return output_curvature

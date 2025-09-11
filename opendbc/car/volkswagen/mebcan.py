@@ -1,5 +1,8 @@
 from opendbc.car.volkswagen.mebutils import map_speed_to_acc_tempolimit
+from opendbc.car.volkswagen.values import VolkswagenFlags
 
+ACCEL_INACTIVE = 3.01
+ACCEL_OVERRIDE = 0.00
 ACC_CTRL_ERROR    = 6
 ACC_CTRL_OVERRIDE = 4
 ACC_CTRL_ACTIVE   = 3
@@ -17,7 +20,7 @@ ACC_HUD_ACTIVE   = 3
 ACC_HUD_ENABLED  = 2
 ACC_HUD_DISABLED = 0
 
-  
+
 def create_steering_control(packer, bus, apply_curvature, lkas_enabled, power):
   values = {
     "Curvature": abs(apply_curvature), # in rad/m
@@ -71,7 +74,7 @@ def create_blinker_control(packer, bus, ea_hud_stock_values, left_blinker, right
 
 def create_lka_hud_control(packer, bus, ldw_stock_values, lat_active, steering_pressed, hud_alert, hud_control, sound_alert):
   display_mode = 1 if lat_active else 0 # travel assist style showing yellow lanes when op is active
-  
+
   values = {}
   if len(ldw_stock_values):
     values = {s: ldw_stock_values[s] for s in [
@@ -91,7 +94,7 @@ def create_lka_hud_control(packer, bus, ldw_stock_values, lat_active, steering_p
     "LDW_Texte": hud_alert,
   })
   return packer.make_can_msg("LDW_02", bus, values)
-  
+
 
 def create_acc_buttons_control(packer, bus, gra_stock_values, cancel=False, resume=False):
   values = {s: gra_stock_values[s] for s in [
@@ -128,7 +131,7 @@ def create_capacitive_wheel_touch(packer, bus, lat_active, klr_stock_values):
       "KLR_Touchauswertung": 10,
     })
   return packer.make_can_msg("KLR_01", bus, values)
-  
+
 
 def acc_control_value(main_switch_on, acc_faulted, long_active, override):
 
@@ -172,31 +175,39 @@ def acc_hold_type(main_switch_on, acc_faulted, long_active, starting, stopping, 
   return acc_hold_type
 
 
-def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, lower_jerk, upper_control_limit, lower_control_limit,
+# def create_acc_accel_control(packer, bus, acc_type, acc_enabled, upper_jerk, lower_jerk, upper_control_limit, lower_control_limit,
+def create_acc_accel_control(packer, bus, CP, acc_type, acc_enabled, upper_jerk, lower_jerk, upper_control_limit, lower_control_limit,
+
                              accel, acc_control, acc_hold_type, stopping, starting, esp_hold, speed, override, travel_assist_available):
   # active longitudinal control disables one pedal driving (regen mode) while using overriding mechnism
   commands = []
+  full_stop = stopping and esp_hold
+  full_stop_no_start = esp_hold and not starting
+  actually_stopping = stopping and not esp_hold
 
   if acc_enabled:
     if override: # the car expects a non inactive accel while overriding
-      acceleration = 0.00 # original ACC still sends active accel in this case (seamless experience)
+      # acceleration = 0.00 # original ACC still sends active accel in this case (seamless experience)
+      acceleration = ACCEL_OVERRIDE  # original ACC still sends active accel in this case (seamless experience)
+    elif full_stop:
+      acceleration = ACCEL_INACTIVE  # inactive accel, newer gen >2024 error of not neutral value
     else:
       acceleration = accel
   else:
-    acceleration = 3.01 # inactive accel
-
+    # acceleration = 3.01 # inactive accel
+    acceleration = ACCEL_INACTIVE  # inactive accel
   values = {
     "ACC_Typ":                    acc_type,
     "ACC_Status_ACC":             acc_control,
     "ACC_StartStopp_Info":        acc_enabled,
     "ACC_Sollbeschleunigung_02":  acceleration,
-    "ACC_zul_Regelabw_unten":     lower_control_limit if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) else 0,
-    "ACC_zul_Regelabw_oben":      upper_control_limit if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) else 0,
-    "ACC_neg_Sollbeschl_Grad_02": lower_jerk if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) else 0,
-    "ACC_pos_Sollbeschl_Grad_02": upper_jerk if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) else 0,
+    "ACC_zul_Regelabw_unten":     lower_control_limit if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) and not full_stop_no_start else 0,
+    "ACC_zul_Regelabw_oben":      upper_control_limit if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) and not full_stop_no_start else 0,
+    "ACC_neg_Sollbeschl_Grad_02": lower_jerk if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) and not full_stop_no_start else 0,
+    "ACC_pos_Sollbeschl_Grad_02": upper_jerk if acc_control in (ACC_CTRL_ACTIVE, ACC_CTRL_OVERRIDE) and not full_stop_no_start else 0,
     "ACC_Anfahren":               starting,
-    "ACC_Anhalten":               stopping if not esp_hold else 0, # as long as we are actually stopping, newer models error if too long
-    "ACC_Anhalteweg":             20.46,
+    "ACC_Anhalten":               1 if actually_stopping else 0,
+    "ACC_Anhalteweg":             0 if actually_stopping else 20.46,
     "ACC_Anforderung_HMS":        acc_hold_type,
     "ACC_AKTIV_regelt":           1 if acc_control == ACC_CTRL_ACTIVE else 0,
     "Speed":                      speed,
@@ -239,7 +250,7 @@ def acc_hud_status_value(main_switch_on, acc_faulted, long_active, override):
 
 def acc_hud_event(acc_hud_control, esp_hold, speed_limit_predicative, speed_limit):
   acc_event = 0
-  
+
   if esp_hold and acc_hud_control == ACC_HUD_ACTIVE:
     acc_event = 3 # acc ready message at standstill
   elif acc_hud_control in (ACC_HUD_ACTIVE, ACC_HUD_OVERRIDE) and speed_limit_predicative:
@@ -248,14 +259,14 @@ def acc_hud_event(acc_hud_control, esp_hold, speed_limit_predicative, speed_limi
     acc_event = 5 # acc limited by speed limit by camera (recently detected)
 
   return acc_event
-  
+
 
 def get_desired_gap(distance_bars, desired_gap, current_gap_signal):
   # mapping desired gap to correct signal of corresponding distance bar
   gap = 0
-  
+
   if distance_bars == current_gap_signal:
-    gap = desired_gap 
+    gap = desired_gap
 
   return gap
 

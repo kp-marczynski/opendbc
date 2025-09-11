@@ -116,6 +116,14 @@ class CarControllerParams:
       self.STEERING_POWER_MIN      = 4     # HCA_03 minimum steering power, percentage
       self.STEERING_POWER_STEP     = 2     # HCA_03 steering power counter steps
 
+      self.CURVATURE_PID: structs.CarParams.LateralPIDTuning = structs.CarParams.LateralPIDTuning(
+        kpBP=[10., 40.],
+        kiBP=[10., 40.],
+        kf=1.,
+        kpV=[0., 1.45],
+        kiV=[0., 0.12],
+      )
+
       self.CURVATURE_LIMITS: CurvatureSteeringLimits = CurvatureSteeringLimits(
         0.195,  # Max curvature for steering command, m^-1
       )
@@ -213,6 +221,7 @@ class WMI(StrEnum):
 class VolkswagenSafetyFlags(IntFlag):
   LONG_CONTROL = 1
   ALT_CRC_VARIANT_1 = 2
+  NO_GAS_OFFSET = 4
 
 
 class VolkswagenFlags(IntFlag):
